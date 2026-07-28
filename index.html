@@ -252,11 +252,12 @@ const keyStatus = document.getElementById('keyStatus');
 
 // --- API Key ---
 keyInput.addEventListener('input', () => {
-  apiKey = keyInput.value.trim();
-  const ok = apiKey.length > 0;
+  const val = keyInput.value.trim();
+  apiKey = val;
+  const ok = val.length > 0;
   input.disabled = !ok;
   sendBtn.disabled = !ok;
-  keyStatus.textContent = ok ? '🔑 Key set' : 'Enter API key above';
+  keyStatus.textContent = ok ? '🔑 Key set (' + val.substring(0, 12) + '...)' : 'Enter API key above';
 });
 
 // --- Toast ---
