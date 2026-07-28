@@ -387,7 +387,7 @@ function extractBarcode(query) {
   return null;
 }
 
-// --- LLM Call ---
+// --- LLM Call (with local fallback) ---
 async function callLLM(messages) {
   const res = await fetch(LLM_API_URL, {
     method: 'POST',
@@ -395,12 +395,70 @@ async function callLLM(messages) {
     body: JSON.stringify({ model: LLM_MODEL, messages, temperature: 0.7, max_tokens: 800 })
   });
   if (!res.ok) {
-    const err = await res.text();
-    if (res.status === 401) throw new Error('401 Unauthorized: Invalid API key');
-    throw new Error('LLM error (' + res.status + '): ' + err);
+    try { const err = await res.text(); if (err.includes('Invalid API key') || err.includes('Incorrect API key')) throw new Error('INVALID_KEY'); } catch(e) { if (e.message === 'INVALID_KEY') throw e; }
+    throw new Error('LLM error (' + res.status + ')');
   }
   const data = await res.json();
   return data.choices[0].message.content;
+}
+
+// --- Local Fallback (no API key needed) ---
+function localReply(query, rows, offData) {
+  const lq = query.toLowerCase();
+  const catMap = { bakery: 'bakery', dairy: 'dairy', drinks: 'drinks', snacks: 'snacks', cupboard: 'store-cupboard' };
+
+  if (lq.includes('product') || lq.includes('have') || lq.includes('range') || lq.includes('catalogue') || lq.includes('sell')) {
+    const cats = [...new Set(rows.map(r => r.category))];
+    return '<strong>🌿 Here\'s what we stock!</strong><br><br>' + cats.map(c => {
+      const items = rows.filter(r => r.category === c);
+      return '<div class="product-card"><div class="p-name">📦 ' + c.charAt(0).toUpperCase() + c.slice(1) + '</div><div class="p-detail">' + items.length + ' product' + (items.length > 1 ? 's' : '') + ' — from €' + Math.min(...items.map(r => parseFloat(r.price_eur))) + '</div></div>';
+    }).join('') + '<br><em>Try asking about a specific category or product!</em>';
+  }
+
+  for (const [key, cat] of Object.entries(catMap)) {
+    if (lq.includes(key)) {
+      const items = rows.filter(r => r.category === cat);
+      if (items.length === 0) continue;
+      return '<strong>📍 ' + cat.charAt(0).toUpperCase() + cat.slice(1) + ' Products</strong><br><br>' + items.map(r => {
+        let html = '<div class="product-card"><div class="p-name">' + r.product_name + '</div><div class="p-detail">€' + r.price_eur + ' · ' + r.unit + ' · ' + r.availability + '</div>';
+        if (r.special_offer) html += '<div class="offer-tag">' + r.special_offer + '</div>';
+        html += '</div>';
+        return html;
+      }).join('') + '<br><em>Want details on any item?</em>';
+    }
+  }
+
+  if (lq.includes('offer') || lq.includes('special') || lq.includes('deal') || lq.includes('promo') || lq.includes('discount')) {
+    const items = rows.filter(r => r.special_offer && r.special_offer.trim() !== '');
+    if (items.length > 0) {
+      return '<strong>🔥 Current Special Offers</strong><br><br>' + items.map(r => {
+        return '<div class="product-card"><div class="p-name">' + r.product_name + '</div><div class="p-detail">€' + r.price_eur + ' · ' + r.unit + '</div><div class="offer-tag">' + r.special_offer + '</div></div>';
+      }).join('');
+    }
+  }
+
+  if (lq.includes('cheddar') || lq.includes('cheese')) {
+    const r = rows.find(p => p.product_name && p.product_name.toLowerCase().includes('cheddar'));
+    if (r) return '<div class="product-card"><div class="p-name">' + r.product_name + '</div><div class="p-detail">' + r.description + '</div><div class="p-detail">€' + r.price_eur + ' · ' + r.unit + ' · ' + r.availability + ' (' + r.stock_this_week + ' in stock)</div></div><br><em>Want to check ingredients or find something else?</em>';
+  }
+
+  if (offData && (lq.includes('ingredient') || lq.includes('nutrition') || lq.includes('allergen') || lq.includes('label'))) {
+    let html = '<strong>🧪 ' + (offData.product_name || 'Product') + '</strong><br><br>';
+    if (offData.ingredients_text) html += '<strong>Ingredients:</strong> ' + offData.ingredients_text + '<br><br>';
+    if (offData.allergens || offData.allergens_from_ingredients) html += '<strong>Allergens:</strong> ' + (offData.allergens || offData.allergens_from_ingredients) + '<br>';
+    if (offData.nutriments) {
+      const n = offData.nutriments;
+      html += '<br><strong>Nutrition per 100g:</strong><br>';
+      html += 'Energy: ' + (n['energy-kcal_100g'] || '?') + ' kcal · Fat: ' + (n.fat_100g || '?') + 'g · Carbs: ' + (n.carbohydrates_100g || '?') + 'g · Protein: ' + (n.proteins_100g || '?') + 'g · Salt: ' + (n.salt_100g || '?') + 'g';
+    }
+    return html;
+  }
+
+  if (lq.includes('hi') || lq.includes('hello') || lq.includes('hey')) {
+    return 'Hello! 👋 Welcome to <strong>Emerald Pantry</strong>. Ask me about our products, ingredients, special offers, or just chat! Try: <em>"What products do you have?"</em>';
+  }
+
+  return 'Hi there! 👋 I\'m the <strong>Emerald Pantry</strong> assistant. I can help you browse our products, check ingredients, find special offers, and more. Try asking <em>"What bakery items do you have?"</em> or <em>"What\'s on offer?"</em>';
 }
 
 // --- Main Handler ---
@@ -483,24 +541,30 @@ async function handleCommand(text) {
     addFlowStep('🧠', 'OpenAI', 'Generating response...', 'llm');
     await delay(80);
 
-    const reply = await callLLM([{ role: 'system', content: system }, { role: 'user', content: query }]);
+    let reply;
+    let usedAI = true;
+    try {
+      reply = await callLLM([{ role: 'system', content: system }, { role: 'user', content: query }]);
+    } catch (e) {
+      if (e.message === 'INVALID_KEY') {
+        addFlowStep('⚠️', 'OpenAI', 'API key invalid — using local response', 'error');
+      } else {
+        addFlowStep('⚠️', 'OpenAI', 'Unreachable — using local response', 'error');
+      }
+      reply = localReply(query, rows, offData);
+      usedAI = false;
+    }
 
     hideTyping();
     addMsg(reply, 'bot');
-    addFlowStep('✅', 'Complete', 'Response delivered', 'result');
-    showToast('✨ Reply ready');
+    addFlowStep('✅', 'Complete', usedAI ? 'AI response' : 'Local response', 'result');
+    showToast(usedAI ? '✨ AI reply ready' : '💡 Local reply');
 
   } catch (e) {
     hideTyping();
     console.error('Error:', e);
-
-    if (e.message.includes('401') || e.message.includes('Unauthorized')) {
-      addMsg('Your OpenAI API key appears to be invalid. Please check it.', 'bot');
-      addFlowStep('❌', 'Auth Error', 'Invalid API key', 'error');
-    } else {
-      addMsg('Sorry, something went wrong. Please try again.', 'bot');
-      addFlowStep('❌', 'Error', e.message.substring(0, 40), 'error');
-    }
+    addMsg(localReply(query, ensureProducts(), null), 'bot');
+    addFlowStep('💡', 'Fallback', 'Used local response', 'result');
   } finally {
     isSending = false;
     sendBtn.disabled = false;
