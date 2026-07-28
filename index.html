@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="Emerald Pantry — Online grocery & specialty food. Chat with our AI assistant.">
+<title>Emerald Pantry · AI Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#f6f9f6;color:#1a2e1a;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,#1a5c2a,#0d3d1a);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:3px solid #c8a96e}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#c8a96e,#a8874f);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff}
+.brand-text{color:#fff}
+.brand-text h1{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:800;letter-spacing:.3px}
+.brand-text span{font-size:.65rem;color:rgba(255,255,255,.55);font-weight:500}
+.key-area{display:flex;align-items:center;gap:8px}
+.key-area input{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:7px 12px;color:#fff;font-size:.72rem;width:220px;outline:none;transition:all .2s;font-family:'Inter',sans-serif}
+.key-area input::placeholder{color:rgba(255,255,255,.35)}
+.key-area input:focus{border-color:#c8a96e;background:rgba(255,255,255,.15)}
+.key-area .status-dot{width:8px;height:8px;border-radius:50%;background:#666;flex-shrink:0;transition:background .3s}
+.key-area .status-dot.active{background:#4caf50;box-shadow:0 0 8px rgba(76,175,80,.5)}
+.key-area .status-dot.error{background:#f44336;box-shadow:0 0 8px rgba(244,67,54,.5)}
+
+/* ── Main Layout ── */
+main{flex:1;display:flex;flex-direction:column;max-width:900px;margin:0 auto;width:100%;padding:0 16px;overflow:hidden}
+
+/* ── Welcome / Empty State ── */
+#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;animation:fadeIn .5s ease}
+#welcome.hide{display:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.welcome-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a5c2a,#0d3d1a);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#c8a96e;margin-bottom:16px;box-shadow:0 8px 30px rgba(26,92,42,.15)}
+#welcome h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:#1a2e1a;margin-bottom:6px}
+#welcome p{color:#6b7f6b;font-size:.82rem;max-width:420px;line-height:1.6;margin-bottom:20px}
+#welcome .suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:460px}
+#welcome .suggestions button{background:#fff;border:1.5px solid #d4e0d4;border-radius:20px;padding:6px 16px;font-size:.72rem;color:#1a5c2a;font-weight:600;transition:all .2s;cursor:pointer}
+#welcome .suggestions button:hover{background:#1a5c2a;color:#fff;border-color:#1a5c2a}
+
+/* ── Chat ── */
+#chat{flex:1;overflow-y:auto;padding:16px 8px;display:none;flex-direction:column;gap:12px;scroll-behavior:smooth}
+#chat.active{display:flex}
+#chat::-webkit-scrollbar{width:4px}
+#chat::-webkit-scrollbar-thumb{background:#c8a96e;border-radius:3px}
+#chat::-webkit-scrollbar-track{background:transparent}
+
+.msg{max-width:88%;padding:12px 16px;border-radius:14px;font-size:.82rem;line-height:1.6;animation:msgIn .3s cubic-bezier(.34,1.56,.64,1);word-wrap:break-word}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,#1a5c2a,#0d3d1a);color:#fff;border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:#fff;color:#1a2e1a;border:1px solid #e8efe8;border-bottom-left-radius:4px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.msg.bot .price{color:#1a5c2a;font-weight:700}
+.msg.bot .offer{display:inline-block;background:#c8a96e;color:#fff;font-size:.65rem;padding:2px 8px;border-radius:6px;font-weight:700;margin:2px 0}
+.msg.bot strong{color:#1a2e1a}
+.msg.bot .product-card{background:#f6f9f6;border-radius:10px;padding:10px 12px;margin:6px 0;border-left:3px solid #1a5c2a}
+.msg.bot .product-card .p-name{font-weight:700;font-size:.82rem}
+.msg.bot .product-card .p-detail{font-size:.72rem;color:#6b7f6b;margin-top:2px}
+@keyframes msgIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+#typing{display:none;align-self:flex-start;background:#fff;border-radius:14px;padding:12px 18px;border:1px solid #e8efe8;border-bottom-left-radius:4px}
+#typing.show{display:flex;gap:5px}
+#typing span{width:8px;height:8px;background:#1a5c2a;border-radius:50%;animation:typingBounce 1.2s ease-in-out infinite}
+#typing span:nth-child(2){animation-delay:.15s}
+#typing span:nth-child(3){animation-delay:.3s}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-10px)}}
+
+/* ── Input Bar ── */
+#inputBar{display:flex;gap:8px;padding:12px 0 16px;flex-shrink:0;align-items:center}
+#inputBar .input-wrap{flex:1;display:flex;align-items:center;background:#fff;border:2px solid #d4e0d4;border-radius:24px;padding:0 6px 0 16px;transition:border-color .25s}
+#inputBar .input-wrap:focus-within{border-color:#1a5c2a}
+#inputBar #input{flex:1;padding:10px 4px;border:none;outline:none;font-size:.82rem;background:transparent;font-family:'Inter',sans-serif;color:#1a2e1a}
+#inputBar #input::placeholder{color:#a0b8a0}
+#inputBar #send{width:38px;height:38px;border:none;border-radius:50%;background:linear-gradient(135deg,#1a5c2a,#0d3d1a);color:#c8a96e;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .25s;cursor:pointer;flex-shrink:0}
+#inputBar #send:hover{transform:scale(1.08);box-shadow:0 4px 14px rgba(26,92,42,.3)}
+#inputBar #send:disabled{opacity:.3;transform:none;box-shadow:none}
+
+/* ── Tool Panel ── */
+#toolPanel{flex-shrink:0;background:#fff;border-radius:12px 12px 0 0;padding:6px 14px 8px;border-top:2px solid #c8a96e;display:none}
+#toolPanel.visible{display:block}
+#toolPanel h4{font-size:.55rem;text-transform:uppercase;letter-spacing:1.2px;color:#1a5c2a;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+#toolPanel h4 i{color:#c8a96e}
+#toolFlow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-height:22px}
+.tool-step{display:flex;align-items:center;gap:4px;background:#f6f9f6;border-radius:6px;padding:3px 10px;font-size:.6rem;animation:stepPop .3s cubic-bezier(.34,1.56,.64,1)}
+.tool-step .icon{width:14px;text-align:center;font-size:.6rem}
+.tool-step .icon.fetch{color:#1a5c2a}
+.tool-step .icon.llm{color:#c8a96e}
+.tool-step .icon.result{color:#0d3d1a}
+.tool-step .icon.done{color:#4caf50}
+.tool-step .label{color:#1a2e1a;font-weight:600}
+.tool-step .detail{color:#8a9f8a;font-size:.52rem}
+.tool-arrow{color:#c8a96e;font-size:.45rem;padding:0 2px}
+@keyframes stepPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+#toolEmpty{color:#bccbbc;font-size:.6rem;font-weight:500;text-align:center;padding:2px 0}
+
+/* ── Disclosure ── */
+.disclosure{flex-shrink:0;text-align:center;padding:8px 16px;font-size:.62rem;color:#8a9f8a;border-top:1px solid #e0ece0;background:#f6f9f6}
+.disclosure i{color:#c8a96e;margin:0 3px}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a2e1a;color:#c8a96e;padding:10px 24px;border-radius:10px;font-weight:600;font-size:.75rem;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:9999;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  header{padding:10px 14px;flex-wrap:wrap;gap:8px}
+  .key-area input{width:140px;font-size:.65rem}
+  .brand-text h1{font-size:1rem}
+  .msg{max-width:95%;font-size:.78rem}
+  #welcome .suggestions button{font-size:.65rem;padding:5px 12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <a href="#" class="brand">
+    <div class="brand-icon"><i class="fas fa-leaf"></i></div>
+    <div class="brand-text">
+      <h1>Emerald Pantry</h1>
+      <span>Online Grocery & Specialty Food</span>
+    </div>
+  </a>
+  <div class="key-area">
+    <input type="password" id="apiKeyInput" placeholder="DeepSeek API Key..." autocomplete="off">
+    <span class="status-dot" id="keyStatus" title="API key status"></span>
+  </div>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+  <!-- Welcome State -->
+  <div id="welcome">
+    <div class="welcome-icon"><i class="fas fa-comment-dots"></i></div>
+    <h2>How can we help you?</h2>
+    <p>Ask about products, prices, ingredients, or special offers. Our assistant pulls live data from our catalogue and can look up nutrition info by barcode.</p>
+    <div class="suggestions">
+      <button onclick="quickAsk('What products do you have?')">Browse products</button>
+      <button onclick="quickAsk('What bakery items are in stock?')">Bakery items</button>
+      <button onclick="quickAsk('What is on special offer?')">Special offers</button>
+      <button onclick="quickAsk('Tell me about the West Cork Farmhouse Cheddar')">Farmhouse Cheddar</button>
+      <button onclick="quickAsk('What are the ingredients of 737628064502?')">Ingredients lookup</button>
+      <button onclick="quickAsk('Do you have any snacks?')">Snacks</button>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div id="chat"></div>
+  <div id="typing"><span></span><span></span><span></span></div>
+
+  <!-- Input Bar -->
+  <div id="inputBar">
+    <div class="input-wrap">
+      <input id="input" type="text" placeholder="Ask about products, ingredients, offers..." disabled>
+      <button id="send" disabled><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- Tool Panel -->
+  <div id="toolPanel">
+    <h4><i class="fas fa-cogs"></i> Live Sources</h4>
+    <div id="toolFlow"><div id="toolEmpty">Ask a question to see live data sources in action</div></div>
+  </div>
+</main>
+
+<!-- ═══ DISCLOSURE ═══ -->
+<div class="disclosure">
+  <i class="fas fa-info-circle"></i> You are chatting with an AI assistant. Responses are generated by AI and may not always be accurate. Verify important information with our team.
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast"><span id="toastMsg"></span></div>
+
+<script>
+// ================================================================
+//  ⚠️  SECURITY NOTICE
+//  The API key below is stored ONLY in a JavaScript variable in
+//  memory. It is NEVER hardcoded in source, NEVER logged, and
+//  NEVER committed to version control. The user enters it via
+//  the password field in the UI.
+// ================================================================
+
+// ─── CONFIG ──────────────────────────────────────────────────────
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
+const DEEPSEEK_MODEL = 'deepseek-chat';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1fY7974AdL4rrO2gnCxcCBUFWWSkVhOi9euJI7lNjo2Q/gviz/tq?tqx=out:json';
+const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product';
+
+// ─── STATE ───────────────────────────────────────────────────────
+let apiKey = '';
+let isSending = false;
+let chatStarted = false;
+
+// ─── DOM REFS ────────────────────────────────────────────────────
+const chat = document.getElementById('chat');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('send');
+const typing = document.getElementById('typing');
+const welcome = document.getElementById('welcome');
+const keyInput = document.getElementById('apiKeyInput');
+const keyStatus = document.getElementById('keyStatus');
+const toolPanel = document.getElementById('toolPanel');
+const toolFlow = document.getElementById('toolFlow');
+const toolEmpty = document.getElementById('toolEmpty');
+const toast = document.getElementById('toast');
+const toastMsg = document.getElementById('toastMsg');
+
+// ─── API KEY MANAGEMENT ─────────────────────────────────────────
+keyInput.addEventListener('input', () => {
+  const val = keyInput.value.trim();
+  if (val.length > 0) {
+    apiKey = val;
+    keyStatus.className = 'status-dot active';
+    keyStatus.title = 'API key set';
+    input.disabled = false;
+    sendBtn.disabled = false;
+    input.focus();
+  } else {
+    apiKey = '';
+    keyStatus.className = 'status-dot';
+    keyStatus.title = 'No API key';
+    input.disabled = true;
+    sendBtn.disabled = true;
+  }
+});
+
+// ─── UI HELPERS ─────────────────────────────────────────────────
+function showToast(msg) {
+  toastMsg.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function addMsg(html, who) {
+  if (!chatStarted) {
+    chatStarted = true;
+    welcome.classList.add('hide');
+    chat.classList.add('active');
+    toolPanel.classList.add('visible');
+  }
+  const d = document.createElement('div');
+  d.className = 'msg ' + who;
+  d.innerHTML = html;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showTyping() {
+  typing.classList.add('show');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function hideTyping() {
+  typing.classList.remove('show');
+}
+
+function clearToolFlow() {
+  toolFlow.innerHTML = '';
+  toolEmpty.style.display = 'none';
+}
+
+function addToolStep(icon, label, detail, cls) {
+  toolEmpty.style.display = 'none';
+  const d = document.createElement('div');
+  d.className = 'tool-step';
+  d.innerHTML = `<span class="icon ${cls}"><i class="fas ${icon}"></i></span><span class="label">${label}</span>${detail ? `<span class="detail">${detail}</span>` : ''}`;
+  toolFlow.appendChild(d);
+  toolFlow.scrollTop = toolFlow.scrollHeight;
+}
+
+function addToolArrow() {
+  const d = document.createElement('span');
+  d.className = 'tool-arrow';
+  d.innerHTML = '<i class="fas fa-chevron-down"></i>';
+  toolFlow.appendChild(d);
+  toolFlow.scrollTop = toolFlow.scrollHeight;
+}
+
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function quickAsk(text) {
+  input.value = text;
+  sendBtn.click();
+}
+
+// ─── GOOGLE SHEET FETCH (GViz) ──────────────────────────────────
+function parseGvizResponse(text) {
+  // Strip /*O_o*/ prefix if present
+  let clean = text.trim();
+  if (clean.startsWith('/*O_o*/')) clean = clean.replace('/*O_o*/', '').trim();
+
+  // Extract JSON from google.visualization.Query.setResponse(...)
+  const prefix = 'google.visualization.Query.setResponse(';
+  const suffix = ');';
+  if (clean.startsWith(prefix) && clean.endsWith(suffix)) {
+    clean = clean.slice(prefix.length, clean.length - suffix.length);
+  }
+
+  const parsed = JSON.parse(clean);
+  if (parsed.status !== 'ok') throw new Error('Sheet query failed: ' + parsed.status);
+
+  const cols = parsed.table.cols.map(c => ({
+    id: c.id,
+    label: c.label || c.id,
+    type: c.type
+  }));
+
+  // If parsedNumHeaders is set, the first row is header info; data starts from row 1
+  // But we already have cols from the response, so we can use rows directly
+  const rows = parsed.table.rows.map(row => {
+    const obj = {};
+    cols.forEach((col, i) => {
+      const cell = row.c && row.c[i];
+      if (cell && cell.v !== undefined && cell.v !== null) {
+        // Use formatted value if available (preserves barcode display etc.)
+        obj[col.label] = cell.f || String(cell.v);
+      } else {
+        obj[col.label] = null;
+      }
+    });
+    return obj;
+  });
+
+  return { cols, rows };
+}
+
+async function fetchSheetData() {
+  const res = await fetch(SHEET_URL);
+  if (!res.ok) throw new Error('Sheet fetch failed: HTTP ' + res.status);
+  const text = await res.text();
+  return parseGvizResponse(text);
+}
+
+// ─── OPEN FOOD FACTS ────────────────────────────────────────────
+async function fetchOpenFoodFacts(barcode) {
+  const cleanBarcode = barcode.replace(/\D/g, '');
+  if (cleanBarcode.length < 8) return null;
+  const res = await fetch(`${OFF_BASE}/${cleanBarcode}.json`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (data.status !== 1) return null;
+  return data.product;
+}
+
+function extractBarcode(query, sheetRows) {
+  // Direct barcode in query
+  const barcodeMatch = query.match(/\b(\d{8,14})\b/);
+  if (barcodeMatch) return barcodeMatch[1];
+
+  // If query asks about ingredients/nutrition/allergens, find matching product in sheet
+  const isIngredientQuery = /ingredients?|nutrition|allergen|label|diet|gluten|dairy|lactose|sugar|salt|fat|calories|kcal/i.test(query);
+  if (!isIngredientQuery) return null;
+
+  // Try to find a product name in the query
+  for (const row of sheetRows) {
+    const name = row.product_name || '';
+    if (name && query.toLowerCase().includes(name.toLowerCase())) {
+      const barcode = row.barcode;
+      if (barcode && barcode.replace(/\D/g, '').length >= 8) {
+        return barcode.replace(/\D/g, '');
+      }
+    }
+  }
+
+  return null;
+}
+
+// ─── LLM CALL (DeepSeek) ────────────────────────────────────────
+async function callLLM(messages) {
+  const res = await fetch(DEEPSEEK_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
+      model: DEEPSEEK_MODEL,
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 800
+    })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('LLM error (' + res.status + '): ' + err);
+  }
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+// ─── MAIN HANDLER ───────────────────────────────────────────────
+async function handleCommand(text) {
+  if (isSending || !text.trim()) return;
+  if (!apiKey) {
+    showToast('Enter your DeepSeek API key first');
+    return;
+  }
+
+  isSending = true;
+  sendBtn.disabled = true;
+  const query = text.trim();
+
+  addMsg(escapeHtml(query), 'user');
+  showTyping();
+  clearToolFlow();
+
+  try {
+    // Step 1: Sheet fetch
+    addToolStep('fa-cloud', 'Fetching', 'Emerald Pantry catalogue...', 'fetch');
+    await delay(100);
+    addToolArrow();
+
+    const sheetResult = await fetchSheetData();
+    const sheetRows = sheetResult.rows;
+
+    addToolStep('fa-table', 'Products', sheetRows.length + ' items loaded', 'fetch');
+    await delay(60);
+    addToolArrow();
+
+    // Step 2: Check for barcode / Open Food Facts
+    let offData = null;
+    const barcode = extractBarcode(query, sheetRows);
+    if (barcode) {
+      addToolStep('fa-barcode', 'Barcode', barcode, 'fetch');
+      addToolArrow();
+      addToolStep('fa-globe', 'Open Food Facts', 'Looking up product...', 'fetch');
+      await delay(80);
+      addToolArrow();
+
+      try {
+        offData = await fetchOpenFoodFacts(barcode);
+        if (offData) {
+          addToolStep('fa-check', 'OFF Data', offData.product_name || 'Found', 'result');
+        } else {
+          addToolStep('fa-exclamation', 'OFF', 'No data for this barcode', 'fetch');
+        }
+      } catch (e) {
+        addToolStep('fa-exclamation', 'OFF Error', e.message, 'fetch');
+      }
+      await delay(60);
+      addToolArrow();
+    }
+
+    // Step 3: Build system prompt
+    const productContext = sheetRows.map((r, i) => {
+      const parts = [];
+      if (r.product_name) parts.push('Name: ' + r.product_name);
+      if (r.category) parts.push('Category: ' + r.category);
+      if (r.price_eur) parts.push('Price: €' + r.price_eur);
+      if (r.unit) parts.push('Unit: ' + r.unit);
+      if (r.availability) parts.push('Availability: ' + r.availability);
+      if (r.stock_this_week) parts.push('Stock: ' + r.stock_this_week);
+      if (r.barcode) parts.push('Barcode: ' + r.barcode);
+      if (r.special_offer) parts.push('Offer: ' + r.special_offer);
+      if (r.description) parts.push('Description: ' + r.description);
+      return '[' + (i + 1) + '] ' + parts.join(' | ');
+    }).join('\n');
+
+    let offContext = '';
+    if (offData) {
+      offContext = '\n\nOpen Food Facts data for barcode ' + barcode + ':\n';
+      offContext += 'Product Name: ' + (offData.product_name || 'N/A') + '\n';
+      offContext += 'Brands: ' + (offData.brands || 'N/A') + '\n';
+      offContext += 'Ingredients: ' + (offData.ingredients_text || 'N/A') + '\n';
+      offContext += 'Allergens: ' + (offData.allergens || offData.allergens_from_ingredients || 'N/A') + '\n';
+      offContext += 'Nutrition per 100g:\n';
+      if (offData.nutriments) {
+        const n = offData.nutriments;
+        offContext += '  - Energy: ' + (n['energy-kcal_100g'] || '?') + ' kcal\n';
+        offContext += '  - Fat: ' + (n.fat_100g || '?') + 'g\n';
+        offContext += '  - Saturated Fat: ' + (n['saturated-fat_100g'] || '?') + 'g\n';
+        offContext += '  - Carbohydrates: ' + (n.carbohydrates_100g || '?') + 'g\n';
+        offContext += '  - Sugars: ' + (n.sugars_100g || '?') + 'g\n';
+        offContext += '  - Fibre: ' + (n.fiber_100g || '?') + 'g\n';
+        offContext += '  - Protein: ' + (n.proteins_100g || '?') + 'g\n';
+        offContext += '  - Salt: ' + (n.salt_100g || '?') + 'g\n';
+      }
+      offContext += 'Labels: ' + (offData.labels || 'N/A') + '\n';
+      if (offData.image_url) offContext += 'Image: ' + offData.image_url + '\n';
+    }
+
+    const systemPrompt = `You are a friendly, knowledgeable shopping assistant for Emerald Pantry, an online grocery and specialty food business based in Ireland.
+
+PRODUCT CATALOGUE (live data — ${sheetRows.length} products):
+${productContext}${offContext}
+
+GUIDELINES:
+- Answer questions conversationally and helpfully using the product data above.
+- When discussing prices, always use the format: **Product Name** — €X.XX
+- Highlight any special offers in your response.
+- If the user asks about something NOT in the product catalogue, that's fine — answer naturally and conversationally (e.g. general questions, small talk).
+- If Open Food Facts data is provided, use it to answer ingredient, nutrition, allergen, and label questions accurately.
+- Keep responses readable with short paragraphs.
+- Be warm and enthusiastic about Irish food and local produce.`;
+
+    addToolStep('fa-brain', 'DeepSeek', 'Thinking...', 'llm');
+    await delay(60);
+
+    const reply = await callLLM([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: query }
+    ]);
+
+    hideTyping();
+    addMsg(reply, 'bot');
+
+    clearToolFlow();
+    addToolStep('fa-check-circle', 'Complete', 'Done', 'done');
+  } catch (e) {
+    hideTyping();
+    console.error('Handler error:', e);
+
+    if (e.message.includes('401') || e.message.includes('Unauthorized') || e.message.includes('Incorrect API key')) {
+      addMsg('Your DeepSeek API key appears to be invalid. Please check it and try again.', 'bot');
+      keyStatus.className = 'status-dot error';
+      keyStatus.title = 'Invalid API key';
+    } else if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+      addMsg('I had trouble connecting to one of the live services. Please check your internet connection and try again.', 'bot');
+    } else {
+      addMsg('Sorry, something went wrong. Please try again.', 'bot');
+    }
+
+    clearToolFlow();
+    addToolStep('fa-exclamation-triangle', 'Error', e.message.substring(0, 40), 'fetch');
+  } finally {
+    isSending = false;
+    sendBtn.disabled = false;
+  }
+}
+
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+// ─── EVENTS ──────────────────────────────────────────────────────
+sendBtn.addEventListener('click', async () => {
+  const t = input.value.trim();
+  if (!t) return;
+  input.value = '';
+  await handleCommand(t);
+});
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendBtn.click();
+  }
+});
+
+// ─── BOOT ────────────────────────────────────────────────────────
+(function init() {
+  addToolStep('fa-leaf', 'Emerald Pantry', 'Ready', 'done');
+  input.focus();
+})();
+</script>
+</body>
+</html>
