@@ -188,9 +188,10 @@ const LLM_API_URL = 'https://api.openai.com/v1/chat/completions';
 const LLM_MODEL = 'gpt-4o-mini';
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1fY7974AdL4rrO2gnCxcCBUFWWSkVhOi9euJI7lNjo2Q/gviz/tq?tqx=out:json';
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product';
+const API_KEY = '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';
 
 // ─── STATE ───────────────────────────────────────────────────────
-let apiKey = '';
+let apiKey = API_KEY;
 let isSending = false;
 let chatStarted = false;
 
@@ -556,6 +557,14 @@ input.addEventListener('keydown', e => {
 
 // ─── BOOT ────────────────────────────────────────────────────────
 (function init() {
+  if (API_KEY) {
+    keyInput.value = API_KEY;
+    apiKey = API_KEY;
+    keyStatus.className = 'status-dot active';
+    keyStatus.title = 'API key set';
+    input.disabled = false;
+    sendBtn.disabled = false;
+  }
   addToolStep('fa-leaf', 'Emerald Pantry', 'Ready', 'done');
   input.focus();
 })();
