@@ -2,389 +2,343 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="description" content="Emerald Pantry — Online grocery & specialty food. Chat with our AI assistant.">
-<title>Emerald Pantry · AI Assistant</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emerald Pantry — AI Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{font-family:'Inter',sans-serif;background:#f6f9f6;color:#1a2e1a;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f3f7f3;--surface:#fff;--text:#1a2e1a;--text-muted:#6b7f6b;--text-dim:#8a9f8a;--accent:#1a7a5a;--accent-hover:#0d5c44;--accent-glow:rgba(26,122,90,0.1);--accent2:#053a2a;--gold:#c8a96e;--gold-light:#f0e6d0;--pink:#e8488a;--teal:#48a58a;--yellow:#facc15;--orange:#fb923c;--border:#dce8dc;--border-light:#e8f0e8;--radius:12px;--radius-sm:8px;--font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;--shadow:0 4px 24px rgba(0,0,0,0.06);--shadow-lg:0 12px 48px rgba(0,0,0,0.08)}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
 
-/* ── Header ── */
-header{background:linear-gradient(135deg,#1a5c2a,#0d3d1a);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:3px solid #c8a96e}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
-.brand-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#c8a96e,#a8874f);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff}
-.brand-text{color:#fff}
-.brand-text h1{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:800;letter-spacing:.3px}
-.brand-text span{font-size:.65rem;color:rgba(255,255,255,.55);font-weight:500}
-.key-area{display:flex;align-items:center;gap:8px}
-.key-area input{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:7px 12px;color:#fff;font-size:.72rem;width:220px;outline:none;transition:all .2s;font-family:'Inter',sans-serif}
-.key-area input::placeholder{color:rgba(255,255,255,.35)}
-.key-area input:focus{border-color:#c8a96e;background:rgba(255,255,255,.15)}
-.key-area .status-dot{width:8px;height:8px;border-radius:50%;background:#666;flex-shrink:0;transition:background .3s}
-.key-area .status-dot.active{background:#4caf50;box-shadow:0 0 8px rgba(76,175,80,.5)}
-.key-area .status-dot.error{background:#f44336;box-shadow:0 0 8px rgba(244,67,54,.5)}
+/* Header */
+.header{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;padding:20px 24px 14px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.header h1{font-size:1.5rem;font-weight:800;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px}
+.header h1 span{background:var(--gold);color:var(--accent2);padding:2px 10px;border-radius:6px;font-size:0.85rem}
+.header p{font-size:0.82rem;opacity:0.85;margin-top:3px;position:relative;z-index:1}
+.header-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.15);padding:3px 10px;border-radius:100px;font-size:0.68rem;margin-top:6px;position:relative;z-index:1}
 
-/* ── Main Layout ── */
-main{flex:1;display:flex;flex-direction:column;max-width:900px;margin:0 auto;width:100%;padding:0 16px;overflow:hidden}
+/* Layout */
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1200px;margin:20px auto;padding:0 20px}
+@media(max-width:860px){.layout{grid-template-columns:1fr;gap:16px}}
 
-/* ── Welcome / Empty State ── */
-#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;animation:fadeIn .5s ease}
-#welcome.hide{display:none}
-@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.welcome-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a5c2a,#0d3d1a);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#c8a96e;margin-bottom:16px;box-shadow:0 8px 30px rgba(26,92,42,.15)}
-#welcome h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:#1a2e1a;margin-bottom:6px}
-#welcome p{color:#6b7f6b;font-size:.82rem;max-width:420px;line-height:1.6;margin-bottom:20px}
-#welcome .suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:460px}
-#welcome .suggestions button{background:#fff;border:1.5px solid #d4e0d4;border-radius:20px;padding:6px 16px;font-size:.72rem;color:#1a5c2a;font-weight:600;transition:all .2s;cursor:pointer}
-#welcome .suggestions button:hover{background:#1a5c2a;color:#fff;border-color:#1a5c2a}
+/* Panel */
+.panel{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.panel-header{padding:10px 14px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;font-size:0.75rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0}
+.panel-header .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+.dot-green{background:#10b981}
+.dot-gold{background:var(--gold)}
+.dot-teal{background:var(--teal)}
+.dot-status{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.dot-status.on{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,.5)}
+.dot-status.off{background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.5)}
 
-/* ── Chat ── */
-#chat{flex:1;overflow-y:auto;padding:16px 8px;display:none;flex-direction:column;gap:12px;scroll-behavior:smooth}
-#chat.active{display:flex}
-#chat::-webkit-scrollbar{width:4px}
-#chat::-webkit-scrollbar-thumb{background:#c8a96e;border-radius:3px}
-#chat::-webkit-scrollbar-track{background:transparent}
+/* Chat */
+.chat{height:380px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.chat::-webkit-scrollbar{width:4px}
+.chat::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.msg{max-width:88%;padding:10px 14px;border-radius:var(--radius-sm);font-size:0.82rem;line-height:1.5;animation:fadeIn 0.3s ease}
+.msg.user{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:2px}
+.msg.bot{background:var(--surface);border:1px solid var(--border-light);align-self:flex-start;border-bottom-left-radius:2px;font-size:0.8rem}
+.msg.bot .highlight-gold{color:var(--gold);font-weight:600}
+.msg.bot .highlight-teal{color:var(--teal);font-weight:600}
+.msg.bot .highlight-pink{color:var(--pink);font-weight:600}
+.msg.bot .highlight-orange{color:var(--orange);font-weight:600}
+.msg.system{background:var(--accent-glow);color:var(--accent);align-self:center;font-size:0.7rem;font-family:var(--mono);padding:5px 10px;border-radius:100px;border:1px solid rgba(26,122,90,0.15)}
+.msg.bot .product-card{background:var(--bg);border-radius:8px;padding:8px 10px;margin:4px 0;border-left:3px solid var(--accent);font-size:0.78rem}
+.msg.bot .product-card .p-name{font-weight:700}
+.msg.bot .product-card .p-detail{font-size:0.7rem;color:var(--text-muted);margin-top:1px}
+.msg.bot .offer-tag{display:inline-block;background:var(--gold);color:var(--accent2);font-size:0.62rem;padding:1px 7px;border-radius:4px;font-weight:700;margin:1px 0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-.msg{max-width:88%;padding:12px 16px;border-radius:14px;font-size:.82rem;line-height:1.6;animation:msgIn .3s cubic-bezier(.34,1.56,.64,1);word-wrap:break-word}
-.msg.user{align-self:flex-end;background:linear-gradient(135deg,#1a5c2a,#0d3d1a);color:#fff;border-bottom-right-radius:4px}
-.msg.bot{align-self:flex-start;background:#fff;color:#1a2e1a;border:1px solid #e8efe8;border-bottom-left-radius:4px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
-.msg.bot .price{color:#1a5c2a;font-weight:700}
-.msg.bot .offer{display:inline-block;background:#c8a96e;color:#fff;font-size:.65rem;padding:2px 8px;border-radius:6px;font-weight:700;margin:2px 0}
-.msg.bot strong{color:#1a2e1a}
-.msg.bot .product-card{background:#f6f9f6;border-radius:10px;padding:10px 12px;margin:6px 0;border-left:3px solid #1a5c2a}
-.msg.bot .product-card .p-name{font-weight:700;font-size:.82rem}
-.msg.bot .product-card .p-detail{font-size:.72rem;color:#6b7f6b;margin-top:2px}
-@keyframes msgIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-
-#typing{display:none;align-self:flex-start;background:#fff;border-radius:14px;padding:12px 18px;border:1px solid #e8efe8;border-bottom-left-radius:4px}
-#typing.show{display:flex;gap:5px}
-#typing span{width:8px;height:8px;background:#1a5c2a;border-radius:50%;animation:typingBounce 1.2s ease-in-out infinite}
+/* Typing */
+#typing{display:none;align-self:flex-start;background:var(--surface);border-radius:14px;padding:10px 16px;border:1px solid var(--border-light);border-bottom-left-radius:4px}
+#typing.show{display:flex;gap:4px}
+#typing span{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:typingBounce 1.2s ease-in-out infinite}
 #typing span:nth-child(2){animation-delay:.15s}
 #typing span:nth-child(3){animation-delay:.3s}
-@keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-10px)}}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
 
-/* ── Input Bar ── */
-#inputBar{display:flex;gap:8px;padding:12px 0 16px;flex-shrink:0;align-items:center}
-#inputBar .input-wrap{flex:1;display:flex;align-items:center;background:#fff;border:2px solid #d4e0d4;border-radius:24px;padding:0 6px 0 16px;transition:border-color .25s}
-#inputBar .input-wrap:focus-within{border-color:#1a5c2a}
-#inputBar #input{flex:1;padding:10px 4px;border:none;outline:none;font-size:.82rem;background:transparent;font-family:'Inter',sans-serif;color:#1a2e1a}
-#inputBar #input::placeholder{color:#a0b8a0}
-#inputBar #send{width:38px;height:38px;border:none;border-radius:50%;background:linear-gradient(135deg,#1a5c2a,#0d3d1a);color:#c8a96e;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .25s;cursor:pointer;flex-shrink:0}
-#inputBar #send:hover{transform:scale(1.08);box-shadow:0 4px 14px rgba(26,92,42,.3)}
-#inputBar #send:disabled{opacity:.3;transform:none;box-shadow:none}
+/* Chat input */
+.chat-input{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border-light);flex-shrink:0}
+.chat-input input{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:0.82rem;font-family:var(--font);outline:none;transition:border 0.2s;background:var(--bg)}
+.chat-input input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.chat-input input::placeholder{color:var(--text-dim)}
+.chat-input button{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.2s;white-space:nowrap}
+.chat-input button:hover{background:var(--accent-hover)}
+.chat-input button:disabled{opacity:0.4;cursor:default}
 
-/* ── Tool Panel ── */
-#toolPanel{flex-shrink:0;background:#fff;border-radius:12px 12px 0 0;padding:6px 14px 8px;border-top:2px solid #c8a96e;display:none}
-#toolPanel.visible{display:block}
-#toolPanel h4{font-size:.55rem;text-transform:uppercase;letter-spacing:1.2px;color:#1a5c2a;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
-#toolPanel h4 i{color:#c8a96e}
-#toolFlow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-height:22px}
-.tool-step{display:flex;align-items:center;gap:4px;background:#f6f9f6;border-radius:6px;padding:3px 10px;font-size:.6rem;animation:stepPop .3s cubic-bezier(.34,1.56,.64,1)}
-.tool-step .icon{width:14px;text-align:center;font-size:.6rem}
-.tool-step .icon.fetch{color:#1a5c2a}
-.tool-step .icon.llm{color:#c8a96e}
-.tool-step .icon.result{color:#0d3d1a}
-.tool-step .icon.done{color:#4caf50}
-.tool-step .label{color:#1a2e1a;font-weight:600}
-.tool-step .detail{color:#8a9f8a;font-size:.52rem}
-.tool-arrow{color:#c8a96e;font-size:.45rem;padding:0 2px}
-@keyframes stepPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
-#toolEmpty{color:#bccbbc;font-size:.6rem;font-weight:500;text-align:center;padding:2px 0}
+/* Commands chips */
+.commands{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-top:1px solid var(--border-light);background:var(--bg);flex-shrink:0}
+.cmd{font-size:0.66rem;padding:3px 8px;border-radius:4px;background:var(--accent-glow);color:var(--accent);font-family:var(--mono);cursor:pointer;transition:all 0.2s;border:1px solid transparent}
+.cmd:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cmd-desc{font-size:0.64rem;color:var(--text-dim);margin-right:2px}
 
-/* ── Disclosure ── */
-.disclosure{flex-shrink:0;text-align:center;padding:8px 16px;font-size:.62rem;color:#8a9f8a;border-top:1px solid #e0ece0;background:#f6f9f6}
-.disclosure i{color:#c8a96e;margin:0 3px}
+/* Flow viz */
+.flowviz{height:380px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--bg);font-family:var(--mono);font-size:0.72rem}
+.flowviz::-webkit-scrollbar{width:4px}
+.flowviz::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.flowviz-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-dim);text-align:center;gap:8px}
+.flowviz-empty svg{width:44px;height:44px;opacity:0.25}
+.flowviz-empty p{font-size:0.75rem;font-family:var(--font);max-width:240px;line-height:1.5;color:var(--text-muted)}
+.flow-node{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-light);background:var(--surface);animation:fadeIn 0.4s ease;transition:all 0.3s}
+.flow-node .icon{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0}
+.flow-node .icon.sheet{background:var(--accent);color:#fff}
+.flow-node .icon.off{background:var(--teal);color:#fff}
+.flow-node .icon.llm{background:var(--gold);color:var(--accent2)}
+.flow-node .icon.result{background:#10b981;color:#fff}
+.flow-node .icon.error{background:#ef4444;color:#fff}
+.flow-node .label{flex:1;font-weight:500;font-family:var(--font);font-size:0.75rem}
+.flow-node .detail{color:var(--text-dim);font-size:0.65rem;text-align:right;font-family:var(--mono);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flow-arrow{text-align:center;color:var(--text-dim);font-size:0.6rem;padding:0;line-height:1;animation:fadeIn 0.3s ease}
 
-/* ── Toast ── */
-#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a2e1a;color:#c8a96e;padding:10px 24px;border-radius:10px;font-weight:600;font-size:.75rem;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:9999;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.2)}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-top:1px solid var(--border-light);justify-content:center;flex-shrink:0}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:0.64rem;color:var(--text-dim)}
+.legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
 
-/* ── Responsive ── */
-@media(max-width:600px){
-  header{padding:10px 14px;flex-wrap:wrap;gap:8px}
-  .key-area input{width:140px;font-size:.65rem}
-  .brand-text h1{font-size:1rem}
-  .msg{max-width:95%;font-size:.78rem}
-  #welcome .suggestions button{font-size:.65rem;padding:5px 12px}
-}
+/* Section labels */
+.section-label{display:flex;align-items:center;gap:6px;font-size:0.62rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);font-weight:600;padding:3px 0}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border-light)}
+
+/* Footer */
+.footer{text-align:center;padding:16px 24px;font-size:0.7rem;color:var(--text-dim);border-top:1px solid var(--border-light);max-width:1200px;margin:0 auto}
+.footer a{color:var(--accent);text-decoration:none}
+.footer a:hover{text-decoration:underline}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:0.75rem;font-weight:500;box-shadow:var(--shadow-lg);animation:toastIn 0.3s ease;z-index:100;display:none}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* Key input in header */
+.key-wrap{position:absolute;top:10px;right:16px;z-index:2}
+.key-wrap input{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:5px 10px;color:#fff;font-size:0.62rem;width:170px;outline:none;transition:all 0.2s;font-family:var(--mono)}
+.key-wrap input::placeholder{color:rgba(255,255,255,0.35)}
+.key-wrap input:focus{border-color:var(--gold);background:rgba(255,255,255,0.18)}
+@media(max-width:600px){.key-wrap{position:relative;top:auto;right:auto;margin-top:8px}.key-wrap input{width:100%}}
 </style>
 </head>
 <body>
 
-<!-- ═══ HEADER ═══ -->
-<header>
-  <a href="#" class="brand">
-    <div class="brand-icon"><i class="fas fa-leaf"></i></div>
-    <div class="brand-text">
-      <h1>Emerald Pantry</h1>
-      <span>Online Grocery & Specialty Food</span>
-    </div>
-  </a>
-  <div class="key-area">
-    <input type="password" id="apiKeyInput" placeholder="OpenAI API Key..." autocomplete="off">
-    <span class="status-dot" id="keyStatus" title="API key status"></span>
+<div class="header">
+  <h1>🌿 Emerald Pantry <span>AI Assistant</span></h1>
+  <p>Online Grocery &amp; Specialty Food — ask about products, ingredients, and offers</p>
+  <div class="header-badge">⚡ Live Sheet · Open Food Facts · OpenAI</div>
+  <div class="key-wrap">
+    <input type="password" id="apiKeyInput" placeholder="OpenAI API key..." autocomplete="off">
   </div>
-</header>
-
-<!-- ═══ MAIN ═══ -->
-<main>
-  <!-- Welcome State -->
-  <div id="welcome">
-    <div class="welcome-icon"><i class="fas fa-comment-dots"></i></div>
-    <h2>How can we help you?</h2>
-    <p>Ask about products, prices, ingredients, or special offers. Our assistant pulls live data from our catalogue and can look up nutrition info by barcode.</p>
-    <div class="suggestions">
-      <button onclick="quickAsk('What products do you have?')">Browse products</button>
-      <button onclick="quickAsk('What bakery items are in stock?')">Bakery items</button>
-      <button onclick="quickAsk('What is on special offer?')">Special offers</button>
-      <button onclick="quickAsk('Tell me about the West Cork Farmhouse Cheddar')">Farmhouse Cheddar</button>
-      <button onclick="quickAsk('What are the ingredients of 737628064502?')">Ingredients lookup</button>
-      <button onclick="quickAsk('Do you have any snacks?')">Snacks</button>
-    </div>
-  </div>
-
-  <!-- Chat -->
-  <div id="chat"></div>
-  <div id="typing"><span></span><span></span><span></span></div>
-
-  <!-- Input Bar -->
-  <div id="inputBar">
-    <div class="input-wrap">
-      <input id="input" type="text" placeholder="Ask about products, ingredients, offers..." disabled>
-      <button id="send" disabled><i class="fas fa-paper-plane"></i></button>
-    </div>
-  </div>
-
-  <!-- Tool Panel -->
-  <div id="toolPanel">
-    <h4><i class="fas fa-cogs"></i> Live Sources</h4>
-    <div id="toolFlow"><div id="toolEmpty">Ask a question to see live data sources in action</div></div>
-  </div>
-</main>
-
-<!-- ═══ DISCLOSURE ═══ -->
-<div class="disclosure">
-  <i class="fas fa-info-circle"></i> You are chatting with an AI assistant (EU AI Act Article 50). Responses are generated by AI and may not always be accurate — verify important information with our team.
 </div>
 
-<!-- ═══ TOAST ═══ -->
-<div id="toast"><span id="toastMsg"></span></div>
+<div class="layout">
+  <!-- Chat Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <span><span class="dot dot-green"></span> Customer Chat</span>
+      <span id="keyStatus" style="font-weight:400;text-transform:none;color:var(--text-muted);font-size:0.7rem">Enter API key above</span>
+    </div>
+    <div class="chat" id="chat">
+      <div class="msg system">🌿 Welcome to Emerald Pantry! Ask me about our products, ingredients, or weekly offers.</div>
+    </div>
+    <div class="commands" id="commands">
+      <span class="cmd-desc">Try:</span>
+      <span class="cmd" data-cmd="What products do you have?">products</span>
+      <span class="cmd" data-cmd="What bakery items are in stock?">bakery</span>
+      <span class="cmd" data-cmd="What is on special offer?">offers</span>
+      <span class="cmd" data-cmd="Tell me about the West Cork Farmhouse Cheddar">cheddar</span>
+      <span class="cmd" data-cmd="What are the ingredients of the Thai Peanut Noodle Kit?">ingredients</span>
+      <span class="cmd" data-cmd="Do you have any snacks?">snacks</span>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="input" placeholder="Ask about products, ingredients, offers..." disabled>
+      <button id="send" disabled>Send</button>
+    </div>
+  </div>
+
+  <!-- Flow Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <span><span class="dot dot-teal"></span> Live Data Flow</span>
+      <span style="font-weight:400;text-transform:none;color:var(--text-muted);font-size:0.7rem">Real-time trace</span>
+    </div>
+    <div class="flowviz" id="flowviz">
+      <div class="flowviz-empty" id="emptyFlow">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 4L30 16L44 18L34 28L36 42L24 35L12 42L14 28L4 18L18 16L24 4Z"/><circle cx="24" cy="24" r="3"/></svg>
+        <p>Send a message to see live data fetching from Google Sheets, Open Food Facts, and OpenAI</p>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span> Sheet</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span> Open Food Facts</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--gold)"></span> OpenAI</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Result</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Error</span>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <i class="fas fa-info-circle" style="color:var(--gold);margin-right:3px"></i> You are chatting with an AI assistant (EU AI Act Article 50). Responses are AI-generated — verify important info with our team.
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 // ================================================================
 //  ⚠️  SECURITY NOTICE
-//  The API key below is stored ONLY in a JavaScript variable in
-//  memory. It is NEVER hardcoded in source, NEVER logged, and
-//  NEVER committed to version control. The user enters it via
-//  the password field in the UI.
+//  The API key is stored ONLY in a JS variable in memory.
+//  It is NEVER hardcoded in source, NEVER logged, and
+//  NEVER committed to version control.
 // ================================================================
 
-// ─── CONFIG ──────────────────────────────────────────────────────
 const LLM_API_URL = 'https://api.openai.com/v1/chat/completions';
 const LLM_MODEL = 'gpt-4o-mini';
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1fY7974AdL4rrO2gnCxcCBUFWWSkVhOi9euJI7lNjo2Q/gviz/tq?tqx=out:json';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1fY7974AdL4rrO2gnCxcCBUFWWSkVhOi9euJI7lNjo2Q/gviz/tq?tqx=out:csv';
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product';
+
+let apiKey = '';
+let isSending = false;
 const API_KEY = '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';
 
-// ─── STATE ───────────────────────────────────────────────────────
-let apiKey = API_KEY;
-let isSending = false;
-let chatStarted = false;
-
-// ─── DOM REFS ────────────────────────────────────────────────────
 const chat = document.getElementById('chat');
 const input = document.getElementById('input');
 const sendBtn = document.getElementById('send');
 const typing = document.getElementById('typing');
-const welcome = document.getElementById('welcome');
+const flowviz = document.getElementById('flowviz');
+const emptyFlow = document.getElementById('emptyFlow');
 const keyInput = document.getElementById('apiKeyInput');
 const keyStatus = document.getElementById('keyStatus');
-const toolPanel = document.getElementById('toolPanel');
-const toolFlow = document.getElementById('toolFlow');
-const toolEmpty = document.getElementById('toolEmpty');
-const toast = document.getElementById('toast');
-const toastMsg = document.getElementById('toastMsg');
 
-// ─── API KEY MANAGEMENT ─────────────────────────────────────────
+// --- API Key ---
 keyInput.addEventListener('input', () => {
-  const val = keyInput.value.trim();
-  if (val.length > 0) {
-    apiKey = val;
-    keyStatus.className = 'status-dot active';
-    keyStatus.title = 'API key set';
-    input.disabled = false;
-    sendBtn.disabled = false;
-    input.focus();
-  } else {
-    apiKey = '';
-    keyStatus.className = 'status-dot';
-    keyStatus.title = 'No API key';
-    input.disabled = true;
-    sendBtn.disabled = true;
-  }
+  apiKey = keyInput.value.trim();
+  const ok = apiKey.length > 0;
+  input.disabled = !ok;
+  sendBtn.disabled = !ok;
+  keyStatus.textContent = ok ? '🔑 Key set' : 'Enter API key above';
 });
 
-// ─── UI HELPERS ─────────────────────────────────────────────────
+// --- Toast ---
 function showToast(msg) {
-  toastMsg.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2800);
 }
 
-function addMsg(html, who) {
-  if (!chatStarted) {
-    chatStarted = true;
-    welcome.classList.add('hide');
-    chat.classList.add('active');
-    toolPanel.classList.add('visible');
-  }
+// --- Chat ---
+function addMsg(html, cls) {
   const d = document.createElement('div');
-  d.className = 'msg ' + who;
+  d.className = 'msg ' + cls;
   d.innerHTML = html;
   chat.appendChild(d);
   chat.scrollTop = chat.scrollHeight;
 }
 
 function showTyping() {
-  typing.classList.add('show');
-  chat.scrollTop = chat.scrollHeight;
+  if (!typing) {
+    const t = document.createElement('div');
+    t.id = 'typing';
+    t.className = 'show';
+    t.innerHTML = '<span></span><span></span><span></span>';
+    chat.appendChild(t);
+    chat.scrollTop = chat.scrollHeight;
+  } else {
+    typing.classList.add('show');
+    chat.scrollTop = chat.scrollHeight;
+  }
 }
 
 function hideTyping() {
-  typing.classList.remove('show');
+  const t = document.getElementById('typing');
+  if (t) t.classList.remove('show');
 }
 
-function clearToolFlow() {
-  toolFlow.innerHTML = '';
-  toolEmpty.style.display = 'none';
-}
-
-function addToolStep(icon, label, detail, cls) {
-  toolEmpty.style.display = 'none';
+// --- Flow Viz ---
+function addFlowStep(icon, label, detail, iconCls) {
+  if (emptyFlow) emptyFlow.style.display = 'none';
   const d = document.createElement('div');
-  d.className = 'tool-step';
-  d.innerHTML = `<span class="icon ${cls}"><i class="fas ${icon}"></i></span><span class="label">${label}</span>${detail ? `<span class="detail">${detail}</span>` : ''}`;
-  toolFlow.appendChild(d);
-  toolFlow.scrollTop = toolFlow.scrollHeight;
+  d.className = 'flow-node';
+  d.innerHTML = '<div class="icon ' + iconCls + '">' + icon + '</div><div class="label">' + label + '</div><div class="detail">' + detail + '</div>';
+  flowviz.appendChild(d);
+  flowviz.scrollTop = flowviz.scrollHeight;
 }
 
-function addToolArrow() {
-  const d = document.createElement('span');
-  d.className = 'tool-arrow';
-  d.innerHTML = '<i class="fas fa-chevron-down"></i>';
-  toolFlow.appendChild(d);
-  toolFlow.scrollTop = toolFlow.scrollHeight;
+function addFlowArrow() {
+  const d = document.createElement('div');
+  d.className = 'flow-arrow';
+  d.textContent = ' ▼ ';
+  flowviz.appendChild(d);
+  flowviz.scrollTop = flowviz.scrollHeight;
 }
 
-function delay(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-function quickAsk(text) {
-  input.value = text;
-  sendBtn.click();
-}
-
-// ─── GOOGLE SHEET FETCH (GViz) ──────────────────────────────────
-function parseGvizResponse(text) {
-  // Strip /*O_o*/ prefix if present
-  let clean = text.trim();
-  if (clean.startsWith('/*O_o*/')) clean = clean.replace('/*O_o*/', '').trim();
-
-  // Extract JSON from google.visualization.Query.setResponse(...)
-  const prefix = 'google.visualization.Query.setResponse(';
-  const suffix = ');';
-  if (clean.startsWith(prefix) && clean.endsWith(suffix)) {
-    clean = clean.slice(prefix.length, clean.length - suffix.length);
-  }
-
-  const parsed = JSON.parse(clean);
-  if (parsed.status !== 'ok') throw new Error('Sheet query failed: ' + parsed.status);
-
-  const cols = parsed.table.cols.map(c => ({
-    id: c.id,
-    label: c.label || c.id,
-    type: c.type
-  }));
-
-  // If parsedNumHeaders is set, the first row is header info; data starts from row 1
-  // But we already have cols from the response, so we can use rows directly
-  const rows = parsed.table.rows.map(row => {
+// --- CSV Parser ---
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = parseCSVLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = parseCSVLine(line);
     const obj = {};
-    cols.forEach((col, i) => {
-      const cell = row.c && row.c[i];
-      if (cell && cell.v !== undefined && cell.v !== null) {
-        // Use formatted value if available (preserves barcode display etc.)
-        obj[col.label] = cell.f || String(cell.v);
-      } else {
-        obj[col.label] = null;
-      }
-    });
+    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
     return obj;
   });
-
-  return { cols, rows };
 }
 
+function parseCSVLine(line) {
+  const result = [];
+  let current = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQuotes = !inQuotes; continue; }
+    if (ch === ',' && !inQuotes) { result.push(current); current = ''; continue; }
+    current += ch;
+  }
+  result.push(current);
+  return result;
+}
+
+// --- Sheet Fetch ---
 async function fetchSheetData() {
   const res = await fetch(SHEET_URL);
   if (!res.ok) throw new Error('Sheet fetch failed: HTTP ' + res.status);
   const text = await res.text();
-  return parseGvizResponse(text);
+  return parseCSV(text);
 }
 
-// ─── OPEN FOOD FACTS ────────────────────────────────────────────
+// --- Open Food Facts ---
 async function fetchOpenFoodFacts(barcode) {
-  const cleanBarcode = barcode.replace(/\D/g, '');
-  if (cleanBarcode.length < 8) return null;
-  const res = await fetch(`${OFF_BASE}/${cleanBarcode}.json`);
+  const clean = barcode.replace(/\D/g, '');
+  if (clean.length < 8) return null;
+  const res = await fetch(OFF_BASE + '/' + clean + '.json');
   if (!res.ok) return null;
   const data = await res.json();
   if (data.status !== 1) return null;
   return data.product;
 }
 
-function extractBarcode(query, sheetRows) {
-  // Direct barcode in query
-  const barcodeMatch = query.match(/\b(\d{8,14})\b/);
-  if (barcodeMatch) return barcodeMatch[1];
-
-  // If query asks about ingredients/nutrition/allergens, find matching product in sheet
+function extractBarcode(query, rows) {
+  const direct = query.match(/\b(\d{8,14})\b/);
+  if (direct) return direct[1];
   const isIngredientQuery = /ingredients?|nutrition|allergen|label|diet|gluten|dairy|lactose|sugar|salt|fat|calories|kcal/i.test(query);
   if (!isIngredientQuery) return null;
-
-  // Try to find a product name in the query
-  for (const row of sheetRows) {
-    const name = row.product_name || '';
-    if (name && query.toLowerCase().includes(name.toLowerCase())) {
-      const barcode = row.barcode;
-      if (barcode && barcode.replace(/\D/g, '').length >= 8) {
-        return barcode.replace(/\D/g, '');
-      }
+  for (const r of rows) {
+    if (r.product_name && query.toLowerCase().includes(r.product_name.toLowerCase())) {
+      const bc = r.barcode;
+      if (bc && bc.replace(/\D/g, '').length >= 8) return bc.replace(/\D/g, '');
     }
   }
-
   return null;
 }
 
-// ─── LLM CALL (OpenAI-compatible) ──────────────────────────────
+// --- LLM Call ---
 async function callLLM(messages) {
   const res = await fetch(LLM_API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + apiKey
-    },
-    body: JSON.stringify({
-      model: LLM_MODEL,
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 800
-    })
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+    body: JSON.stringify({ model: LLM_MODEL, messages, temperature: 0.7, max_tokens: 800 })
   });
   if (!res.ok) {
     const err = await res.text();
@@ -394,13 +348,10 @@ async function callLLM(messages) {
   return data.choices[0].message.content;
 }
 
-// ─── MAIN HANDLER ───────────────────────────────────────────────
+// --- Main Handler ---
 async function handleCommand(text) {
   if (isSending || !text.trim()) return;
-  if (!apiKey) {
-    showToast('Enter your OpenAI API key first');
-    return;
-  }
+  if (!apiKey) { showToast('Enter your OpenAI API key first'); return; }
 
   isSending = true;
   sendBtn.disabled = true;
@@ -408,51 +359,44 @@ async function handleCommand(text) {
 
   addMsg(escapeHtml(query), 'user');
   showTyping();
-  clearToolFlow();
 
   try {
-    // Step 1: Sheet fetch
-    addToolStep('fa-cloud', 'Fetching', 'Emerald Pantry catalogue...', 'fetch');
+    // Step 1: Fetch sheet
+    addFlowStep('📊', 'Google Sheet', 'Fetching catalogue...', 'sheet');
+    await delay(150);
+    addFlowArrow();
+
+    const rows = await fetchSheetData();
+    addFlowStep('📋', 'Sheet Data', rows.length + ' products loaded', 'sheet');
     await delay(100);
-    addToolArrow();
+    addFlowArrow();
 
-    const sheetResult = await fetchSheetData();
-    const sheetRows = sheetResult.rows;
-
-    addToolStep('fa-table', 'Products', sheetRows.length + ' items loaded', 'fetch');
-    await delay(60);
-    addToolArrow();
-
-    // Step 2: Check for barcode / Open Food Facts
+    // Step 2: Open Food Facts (if applicable)
     let offData = null;
-    const barcode = extractBarcode(query, sheetRows);
+    const barcode = extractBarcode(query, rows);
     if (barcode) {
-      addToolStep('fa-barcode', 'Barcode', barcode, 'fetch');
-      addToolArrow();
-      addToolStep('fa-globe', 'Open Food Facts', 'Looking up product...', 'fetch');
-      await delay(80);
-      addToolArrow();
-
+      addFlowStep('🔍', 'Barcode', barcode, 'off');
+      addFlowArrow();
       try {
         offData = await fetchOpenFoodFacts(barcode);
         if (offData) {
-          addToolStep('fa-check', 'OFF Data', offData.product_name || 'Found', 'result');
+          addFlowStep('✅', 'Open Food Facts', offData.product_name || 'Found', 'result');
         } else {
-          addToolStep('fa-exclamation', 'OFF', 'No data for this barcode', 'fetch');
+          addFlowStep('⚠️', 'Open Food Facts', 'No data for ' + barcode, 'off');
         }
       } catch (e) {
-        addToolStep('fa-exclamation', 'OFF Error', e.message, 'fetch');
+        addFlowStep('❌', 'OFF Error', e.message.substring(0, 30), 'error');
       }
-      await delay(60);
-      addToolArrow();
+      await delay(80);
+      addFlowArrow();
     }
 
-    // Step 3: Build system prompt
-    const productContext = sheetRows.map((r, i) => {
+    // Step 3: Build context
+    const productCtx = rows.map((r, i) => {
       const parts = [];
       if (r.product_name) parts.push('Name: ' + r.product_name);
       if (r.category) parts.push('Category: ' + r.category);
-      if (r.price_eur) parts.push('Price: €' + r.price_eur);
+      if (r.price_eur) parts.push('Price: EUR ' + r.price_eur);
       if (r.unit) parts.push('Unit: ' + r.unit);
       if (r.availability) parts.push('Availability: ' + r.availability);
       if (r.stock_this_week) parts.push('Stock: ' + r.stock_this_week);
@@ -462,85 +406,62 @@ async function handleCommand(text) {
       return '[' + (i + 1) + '] ' + parts.join(' | ');
     }).join('\n');
 
-    let offContext = '';
+    let offCtx = '';
     if (offData) {
-      offContext = '\n\nOpen Food Facts data for barcode ' + barcode + ':\n';
-      offContext += 'Product Name: ' + (offData.product_name || 'N/A') + '\n';
-      offContext += 'Brands: ' + (offData.brands || 'N/A') + '\n';
-      offContext += 'Ingredients: ' + (offData.ingredients_text || 'N/A') + '\n';
-      offContext += 'Allergens: ' + (offData.allergens || offData.allergens_from_ingredients || 'N/A') + '\n';
-      offContext += 'Nutrition per 100g:\n';
+      offCtx = '\n\nOpen Food Facts for barcode ' + barcode + ':\n';
+      offCtx += 'Product: ' + (offData.product_name || 'N/A') + '\n';
+      offCtx += 'Brands: ' + (offData.brands || 'N/A') + '\n';
+      offCtx += 'Ingredients: ' + (offData.ingredients_text || 'N/A') + '\n';
+      offCtx += 'Allergens: ' + (offData.allergens || offData.allergens_from_ingredients || 'N/A') + '\n';
       if (offData.nutriments) {
         const n = offData.nutriments;
-        offContext += '  - Energy: ' + (n['energy-kcal_100g'] || '?') + ' kcal\n';
-        offContext += '  - Fat: ' + (n.fat_100g || '?') + 'g\n';
-        offContext += '  - Saturated Fat: ' + (n['saturated-fat_100g'] || '?') + 'g\n';
-        offContext += '  - Carbohydrates: ' + (n.carbohydrates_100g || '?') + 'g\n';
-        offContext += '  - Sugars: ' + (n.sugars_100g || '?') + 'g\n';
-        offContext += '  - Fibre: ' + (n.fiber_100g || '?') + 'g\n';
-        offContext += '  - Protein: ' + (n.proteins_100g || '?') + 'g\n';
-        offContext += '  - Salt: ' + (n.salt_100g || '?') + 'g\n';
+        offCtx += 'Nutrition per 100g: Energy ' + (n['energy-kcal_100g'] || '?') + ' kcal, Fat ' + (n.fat_100g || '?') + 'g, Carbs ' + (n.carbohydrates_100g || '?') + 'g, Protein ' + (n.proteins_100g || '?') + 'g, Salt ' + (n.salt_100g || '?') + 'g\n';
       }
-      offContext += 'Labels: ' + (offData.labels || 'N/A') + '\n';
-      if (offData.image_url) offContext += 'Image: ' + offData.image_url + '\n';
+      offCtx += 'Labels: ' + (offData.labels || 'N/A') + '\n';
     }
 
-    const systemPrompt = `You are a friendly, knowledgeable shopping assistant for Emerald Pantry, an online grocery and specialty food business based in Ireland.
+    const system = 'You are a friendly shopping assistant for Emerald Pantry, an Irish online grocery and specialty food store.\n\nLIVE CATALOGUE (' + rows.length + ' products):\n' + productCtx + offCtx + '\n\nGUIDELINES:\n- Answer using the product data above. If the user asks about something not in the catalogue, answer conversationally anyway.\n- Format prices as: **Product** — EUR X.XX\n- Highlight special offers.\n- Keep responses warm, short, and readable.\n- If Open Food Facts data is present, use it for ingredient/nutrition answers.';
 
-PRODUCT CATALOGUE (live data — ${sheetRows.length} products):
-${productContext}${offContext}
+    addFlowStep('🧠', 'OpenAI', 'Generating response...', 'llm');
+    await delay(100);
 
-GUIDELINES:
-- Answer questions conversationally and helpfully using the product data above.
-- When discussing prices, always use the format: **Product Name** — €X.XX
-- Highlight any special offers in your response.
-- If the user asks about something NOT in the product catalogue, that's fine — answer naturally and conversationally (e.g. general questions, small talk).
-- If Open Food Facts data is provided, use it to answer ingredient, nutrition, allergen, and label questions accurately.
-- Keep responses readable with short paragraphs.
-- Be warm and enthusiastic about Irish food and local produce.`;
-
-    addToolStep('fa-brain', 'OpenAI', 'Thinking...', 'llm');
-    await delay(60);
-
-    const reply = await callLLM([
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: query }
-    ]);
+    const reply = await callLLM([{ role: 'system', content: system }, { role: 'user', content: query }]);
 
     hideTyping();
     addMsg(reply, 'bot');
+    addFlowStep('✅', 'Complete', 'Response delivered', 'result');
+    showToast('✨ Reply ready');
 
-    clearToolFlow();
-    addToolStep('fa-check-circle', 'Complete', 'Done', 'done');
   } catch (e) {
     hideTyping();
-    console.error('Handler error:', e);
+    console.error('Error:', e);
 
     if (e.message.includes('401') || e.message.includes('Unauthorized') || e.message.includes('Incorrect API key')) {
-      addMsg('Your OpenAI API key appears to be invalid. Please check it and try again.', 'bot');
-      keyStatus.className = 'status-dot error';
-      keyStatus.title = 'Invalid API key';
+      addMsg('Your OpenAI API key appears to be invalid. Please check it.', 'bot');
+      addFlowStep('❌', 'Auth Error', 'Invalid API key', 'error');
     } else if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
-      addMsg('I had trouble connecting to one of the live services. Please check your internet connection and try again.', 'bot');
+      addMsg('I had trouble connecting to a live service. Check your internet and try again.', 'bot');
+      addFlowStep('❌', 'Network Error', 'Connection failed', 'error');
+    } else if (e.message.includes('Sheet')) {
+      addMsg('I could not load the product catalogue. Please try again.', 'bot');
+      addFlowStep('❌', 'Sheet Error', e.message.substring(0, 30), 'error');
     } else {
       addMsg('Sorry, something went wrong. Please try again.', 'bot');
+      addFlowStep('❌', 'Error', e.message.substring(0, 30), 'error');
     }
-
-    clearToolFlow();
-    addToolStep('fa-exclamation-triangle', 'Error', e.message.substring(0, 40), 'fetch');
   } finally {
     isSending = false;
     sendBtn.disabled = false;
   }
 }
 
-function escapeHtml(text) {
+function escapeHtml(t) {
   const d = document.createElement('div');
-  d.textContent = text;
+  d.textContent = t;
   return d.innerHTML;
 }
 
-// ─── EVENTS ──────────────────────────────────────────────────────
+// --- Events ---
 sendBtn.addEventListener('click', async () => {
   const t = input.value.trim();
   if (!t) return;
@@ -549,24 +470,30 @@ sendBtn.addEventListener('click', async () => {
 });
 
 input.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendBtn.click();
-  }
+  if (e.key === 'Enter') sendBtn.click();
 });
 
-// ─── BOOT ────────────────────────────────────────────────────────
+document.querySelectorAll('.cmd').forEach(el => {
+  el.addEventListener('click', () => {
+    input.value = el.dataset.cmd;
+    sendBtn.click();
+  });
+});
+
+// --- Welcome message in flowviz ---
 (function init() {
   if (API_KEY) {
     keyInput.value = API_KEY;
     apiKey = API_KEY;
-    keyStatus.className = 'status-dot active';
-    keyStatus.title = 'API key set';
     input.disabled = false;
     sendBtn.disabled = false;
+    keyStatus.textContent = '🔑 Key set';
+    addFlowStep('🔑', 'API Key', 'Pre-loaded', 'result');
+    addFlowArrow();
+    addFlowStep('🌿', 'Emerald Pantry', 'Ready to answer', 'result');
+  } else {
+    addFlowStep('🌿', 'Emerald Pantry', 'Enter API key above', 'result');
   }
-  addToolStep('fa-leaf', 'Emerald Pantry', 'Ready', 'done');
-  input.focus();
 })();
 </script>
 </body>
