@@ -4,12 +4,12 @@ import cors from 'cors';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 
-if (!GROQ_API_KEY) {
-  console.error('FATAL: GROQ_API_KEY environment variable is required.');
+if (!OPENAI_API_KEY) {
+  console.error('FATAL: OPENAI_API_KEY environment variable is required.');
   process.exit(1);
 }
 
@@ -18,32 +18,32 @@ app.use(express.json({ limit: '100kb' }));
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages, system } = req.body;
+    const { messages } = req.body;
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'messages array is required' });
     }
 
-    const groqRes = await fetch(GROQ_URL, {
+    const openaiRes = await fetch(OPENAI_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model: OPENAI_MODEL,
         messages,
         temperature: 0.7,
         max_tokens: 800
       })
     });
 
-    if (!groqRes.ok) {
-      const errText = await groqRes.text();
-      console.error('Groq error:', groqRes.status, errText);
+    if (!openaiRes.ok) {
+      const errText = await openaiRes.text();
+      console.error('OpenAI error:', openaiRes.status, errText);
       return res.status(502).json({ error: 'LLM service error', detail: errText });
     }
 
-    const data = await groqRes.json();
+    const data = await openaiRes.json();
     res.json({ reply: data.choices[0].message.content });
   } catch (err) {
     console.error('Server error:', err);
@@ -52,7 +52,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', model: GROQ_MODEL });
+  res.json({ status: 'ok', model: OPENAI_MODEL });
 });
 
 app.listen(PORT, () => {

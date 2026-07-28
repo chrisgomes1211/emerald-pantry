@@ -118,7 +118,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <div class="header">
   <h1>🌿 Emerald Pantry <span>AI Assistant</span></h1>
   <p>Online Grocery &amp; Specialty Food — ask about products, ingredients, and offers</p>
-  <div class="header-badge">⚡ Live Sheet · Open Food Facts · Groq</div>
+  <div class="header-badge">⚡ Live Sheet · Open Food Facts · OpenAI</div>
 </div>
 
 <div class="layout">
@@ -154,13 +154,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="flowviz" id="flowviz">
       <div class="flowviz-empty" id="emptyFlow">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 4L30 16L44 18L34 28L36 42L24 35L12 42L14 28L4 18L18 16L24 4Z"/><circle cx="24" cy="24" r="3"/></svg>
-        <p>Send a message to see live data fetching from Google Sheets, Open Food Facts, and Groq</p>
+        <p>Send a message to see live data fetching from Google Sheets, Open Food Facts, and OpenAI</p>
       </div>
     </div>
     <div class="legend">
       <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span> Sheet</span>
       <span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span> Open Food Facts</span>
-      <span class="legend-item"><span class="legend-dot" style="background:var(--gold)"></span> Groq LLM</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--gold)"></span> OpenAI LLM</span>
       <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Result</span>
       <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Error</span>
     </div>
@@ -174,7 +174,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <div class="toast" id="toast"></div>
 
 <script>
-const BACKEND_URL = 'https://emerald-pantry-api.onrender.com';
+const BACKEND_URL = 'http://localhost:3000';
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1fY7974AdL4rrO2gnCxcCBUFWWSkVhOi9euJI7lNjo2Q/gviz/tq?tqx=out:csv&gid=918921545';
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product';
 
@@ -508,13 +508,13 @@ async function handleCommand(text) {
 
     let reply;
     let usedAI = false;
-    addFlowStep('🧠', 'Groq', 'Calling backend...', 'llm');
+    addFlowStep('🧠', 'OpenAI', 'Calling backend...', 'llm');
     await delay(80);
     try {
       reply = await callBackend([{ role: 'system', content: system }, { role: 'user', content: query }]);
       usedAI = true;
     } catch (e) {
-      addFlowStep('⚠️', 'Groq', e.message.includes('Backend') ? 'Backend unreachable — using local' : 'Error — using local', 'error');
+      addFlowStep('⚠️', 'OpenAI', e.message.includes('Backend') ? 'Backend unreachable — using local' : 'Error — using local', 'error');
     }
     if (!usedAI) reply = localReply(query, rows, offData);
 
