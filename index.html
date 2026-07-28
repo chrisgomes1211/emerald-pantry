@@ -111,12 +111,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:0.75rem;font-weight:500;box-shadow:var(--shadow-lg);animation:toastIn 0.3s ease;z-index:100;display:none}
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
-/* Key input in header */
-.key-wrap{position:absolute;top:10px;right:16px;z-index:2}
-.key-wrap input{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:5px 10px;color:#fff;font-size:0.62rem;width:170px;outline:none;transition:all 0.2s;font-family:var(--mono)}
-.key-wrap input::placeholder{color:rgba(255,255,255,0.35)}
-.key-wrap input:focus{border-color:var(--gold);background:rgba(255,255,255,0.18)}
-@media(max-width:600px){.key-wrap{position:relative;top:auto;right:auto;margin-top:8px}.key-wrap input{width:100%}}
 </style>
 </head>
 <body>
@@ -125,9 +119,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <h1>🌿 Emerald Pantry <span>AI Assistant</span></h1>
   <p>Online Grocery &amp; Specialty Food — ask about products, ingredients, and offers</p>
   <div class="header-badge">⚡ Live Sheet · Open Food Facts · Groq</div>
-  <div class="key-wrap">
-    <input type="password" id="apiKeyInput" placeholder="Paste Groq key here (gsk_...) or use local replies" autocomplete="off">
-  </div>
 </div>
 
 <div class="layout">
@@ -135,7 +126,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div class="panel">
     <div class="panel-header">
       <span><span class="dot dot-green"></span> Customer Chat</span>
-      <span id="keyStatus" style="font-weight:400;text-transform:none;color:var(--text-muted);font-size:0.7rem">💡 Enter key above, or chat without one</span>
     </div>
     <div class="chat" id="chat">
       <div class="msg system">🌿 Welcome to Emerald Pantry! Ask me about our products, ingredients, or weekly offers.</div>
@@ -150,8 +140,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <span class="cmd" data-cmd="Do you have any snacks?">snacks</span>
     </div>
     <div class="chat-input">
-      <input type="text" id="input" placeholder="Ask about products, ingredients, offers..." disabled>
-      <button id="send" disabled>Send</button>
+      <input type="text" id="input" placeholder="Ask about products, ingredients, offers...">
+      <button id="send">Send</button>
     </div>
   </div>
 
@@ -184,23 +174,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <div class="toast" id="toast"></div>
 
 <script>
-// ================================================================
-//  ⚠️  SECURITY NOTICE
-//  The API key is stored ONLY in a JS variable in memory.
-//  It is NEVER hardcoded in source, NEVER logged, and
-//  NEVER committed to version control.
-// ================================================================
-
-const LLM_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const LLM_MODEL = 'llama-3.1-8b-instant';
+const BACKEND_URL = 'https://emerald-pantry-api.onrender.com';
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1fY7974AdL4rrO2gnCxcCBUFWWSkVhOi9euJI7lNjo2Q/gviz/tq?tqx=out:csv&gid=918921545';
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product';
 
-// ⚠️  DO NOT HARDCODE AN API KEY HERE
-//  Using Groq (OpenAI-compatible API) — key stays in memory only.
-//  The user enters their key in the password field in the UI.
-//  It stays only in memory for the session.
-let apiKey = '';
 let isSending = false;
 let products = [];
 let usingLiveSheet = false;
@@ -247,15 +224,6 @@ const sendBtn = document.getElementById('send');
 const typing = document.getElementById('typing');
 const flowviz = document.getElementById('flowviz');
 const emptyFlow = document.getElementById('emptyFlow');
-const keyInput = document.getElementById('apiKeyInput');
-const keyStatus = document.getElementById('keyStatus');
-
-// --- API Key ---
-keyInput.addEventListener('input', () => {
-  const val = keyInput.value.trim();
-  apiKey = val;
-  keyStatus.textContent = val ? '🔑 Key set (' + val.substring(0, 12) + '...)' : '💡 Enter key above, or chat without one (local replies)';
-});
 
 // --- Toast ---
 function showToast(msg) {
@@ -388,23 +356,19 @@ function extractBarcode(query) {
   return null;
 }
 
-// --- LLM Call (with local fallback) ---
-async function callLLM(messages) {
-  const res = await fetch(LLM_API_URL, {
+// --- LLM Call (via backend proxy — key is server-side only) ---
+async function callBackend(messages) {
+  const res = await fetch(BACKEND_URL + '/api/chat', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-    body: JSON.stringify({ model: LLM_MODEL, messages, temperature: 0.7, max_tokens: 800 })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages })
   });
   if (!res.ok) {
-    try {
-      const err = await res.text();
-      const el = err.toLowerCase();
-      if (el.includes('invalid api key') || el.includes('incorrect api key')) throw new Error('INVALID_KEY');
-    } catch (e) { if (e.message === 'INVALID_KEY') throw e; }
-    throw new Error('LLM error (' + res.status + ')');
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Backend error (' + res.status + ')');
   }
   const data = await res.json();
-  return data.choices[0].message.content;
+  return data.reply;
 }
 
 // --- Local Fallback (no API key needed) ---
@@ -544,22 +508,13 @@ async function handleCommand(text) {
 
     let reply;
     let usedAI = false;
-    if (apiKey) {
-      addFlowStep('🧠', 'Groq', 'Generating response...', 'llm');
-      await delay(80);
-      try {
-        reply = await callLLM([{ role: 'system', content: system }, { role: 'user', content: query }]);
-        usedAI = true;
-      } catch (e) {
-        if (e.message === 'INVALID_KEY') {
-          addFlowStep('⚠️', 'Groq', 'Key invalid — using local response', 'error');
-        } else {
-          addFlowStep('⚠️', 'Groq', 'Unreachable — using local response', 'error');
-        }
-      }
-    } else {
-      addFlowStep('💡', 'Local', 'No API key — using built-in replies', 'result');
-      await delay(40);
+    addFlowStep('🧠', 'Groq', 'Calling backend...', 'llm');
+    await delay(80);
+    try {
+      reply = await callBackend([{ role: 'system', content: system }, { role: 'user', content: query }]);
+      usedAI = true;
+    } catch (e) {
+      addFlowStep('⚠️', 'Groq', e.message.includes('Backend') ? 'Backend unreachable — using local' : 'Error — using local', 'error');
     }
     if (!usedAI) reply = localReply(query, rows, offData);
 
@@ -606,9 +561,7 @@ document.querySelectorAll('.cmd').forEach(el => {
 
 // --- Welcome message in flowviz ---
 (function init() {
-  addFlowStep('🔑', 'API Key', 'Enter in password field above', 'result');
-  addFlowArrow();
-  addFlowStep('🌿', 'Emerald Pantry', 'Ready (local fallback works without key)', 'result');
+  addFlowStep('🌿', 'Emerald Pantry', 'Ready — AI via backend proxy', 'result');
 })();
 </script>
 </body>
