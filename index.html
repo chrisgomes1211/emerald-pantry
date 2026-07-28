@@ -126,7 +126,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <p>Online Grocery &amp; Specialty Food — ask about products, ingredients, and offers</p>
   <div class="header-badge">⚡ Live Sheet · Open Food Facts · OpenAI</div>
   <div class="key-wrap">
-    <input type="password" id="apiKeyInput" placeholder="OpenAI API key..." autocomplete="off">
+    <input type="password" id="apiKeyInput" placeholder="Paste OpenAI key here (or use local replies)" autocomplete="off">
   </div>
 </div>
 
@@ -196,11 +196,14 @@ const LLM_MODEL = 'gpt-4o-mini';
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1fY7974AdL4rrO2gnCxcCBUFWWSkVhOi9euJI7lNjo2Q/gviz/tq?tqx=out:csv&gid=918921545';
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product';
 
+// ⚠️  DO NOT HARDCODE AN API KEY HERE
+//  OpenAI auto-revokes keys found in public GitHub repos.
+//  The user enters their key in the password field in the UI.
+//  It stays only in memory for the session.
 let apiKey = '';
 let isSending = false;
 let products = [];
 let usingLiveSheet = false;
-const API_KEY = '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';
 
 // ─── EMBEDDED PRODUCT DATA (fallback if sheet fetch fails) ──────
 // This data matches the Google Sheet exactly. The app always tries
@@ -464,7 +467,6 @@ function localReply(query, rows, offData) {
 // --- Main Handler ---
 async function handleCommand(text) {
   if (isSending || !text.trim()) return;
-  if (!apiKey) { showToast('Enter your OpenAI API key first'); return; }
 
   isSending = true;
   sendBtn.disabled = true;
@@ -538,22 +540,26 @@ async function handleCommand(text) {
 
     const system = 'You are a friendly shopping assistant for Emerald Pantry, an Irish online grocery and specialty food store.\n\nPRODUCT CATALOGUE (' + rows.length + ' products):\n' + productCtx + offCtx + '\n\nGUIDELINES:\n- Answer using the product data above. If the user asks about something not in the catalogue, answer conversationally anyway.\n- Format prices as: **Product** — EUR X.XX\n- Highlight special offers.\n- Keep responses warm, short, and readable.\n- If Open Food Facts data is present, use it for ingredient/nutrition answers.';
 
-    addFlowStep('🧠', 'OpenAI', 'Generating response...', 'llm');
-    await delay(80);
-
     let reply;
-    let usedAI = true;
-    try {
-      reply = await callLLM([{ role: 'system', content: system }, { role: 'user', content: query }]);
-    } catch (e) {
-      if (e.message === 'INVALID_KEY') {
-        addFlowStep('⚠️', 'OpenAI', 'API key invalid — using local response', 'error');
-      } else {
-        addFlowStep('⚠️', 'OpenAI', 'Unreachable — using local response', 'error');
+    let usedAI = false;
+    if (apiKey) {
+      addFlowStep('🧠', 'OpenAI', 'Generating response...', 'llm');
+      await delay(80);
+      try {
+        reply = await callLLM([{ role: 'system', content: system }, { role: 'user', content: query }]);
+        usedAI = true;
+      } catch (e) {
+        if (e.message === 'INVALID_KEY') {
+          addFlowStep('⚠️', 'OpenAI', 'Key invalid — using local response', 'error');
+        } else {
+          addFlowStep('⚠️', 'OpenAI', 'Unreachable — using local response', 'error');
+        }
       }
-      reply = localReply(query, rows, offData);
-      usedAI = false;
+    } else {
+      addFlowStep('💡', 'Local', 'No API key — using built-in replies', 'result');
+      await delay(40);
     }
+    if (!usedAI) reply = localReply(query, rows, offData);
 
     hideTyping();
     addMsg(reply, 'bot');
@@ -598,18 +604,9 @@ document.querySelectorAll('.cmd').forEach(el => {
 
 // --- Welcome message in flowviz ---
 (function init() {
-  if (API_KEY) {
-    keyInput.value = API_KEY;
-    apiKey = API_KEY;
-    input.disabled = false;
-    sendBtn.disabled = false;
-    keyStatus.textContent = '🔑 Key set';
-    addFlowStep('🔑', 'API Key', 'Pre-loaded', 'result');
-    addFlowArrow();
-    addFlowStep('🌿', 'Emerald Pantry', 'Ready to answer', 'result');
-  } else {
-    addFlowStep('🌿', 'Emerald Pantry', 'Enter API key above', 'result');
-  }
+  addFlowStep('🔑', 'API Key', 'Enter in password field above', 'result');
+  addFlowArrow();
+  addFlowStep('🌿', 'Emerald Pantry', 'Ready (local fallback works without key)', 'result');
 })();
 </script>
 </body>
