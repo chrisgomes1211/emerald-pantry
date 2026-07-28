@@ -125,7 +125,7 @@ main{flex:1;display:flex;flex-direction:column;max-width:900px;margin:0 auto;wid
     </div>
   </a>
   <div class="key-area">
-    <input type="password" id="apiKeyInput" placeholder="DeepSeek API Key..." autocomplete="off">
+    <input type="password" id="apiKeyInput" placeholder="OpenAI API Key..." autocomplete="off">
     <span class="status-dot" id="keyStatus" title="API key status"></span>
   </div>
 </header>
@@ -184,8 +184,8 @@ main{flex:1;display:flex;flex-direction:column;max-width:900px;margin:0 auto;wid
 // ================================================================
 
 // ─── CONFIG ──────────────────────────────────────────────────────
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-const DEEPSEEK_MODEL = 'deepseek-chat';
+const LLM_API_URL = 'https://api.openai.com/v1/chat/completions';
+const LLM_MODEL = 'gpt-4o-mini';
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1fY7974AdL4rrO2gnCxcCBUFWWSkVhOi9euJI7lNjo2Q/gviz/tq?tqx=out:json';
 const OFF_BASE = 'https://world.openfoodfacts.org/api/v2/product';
 
@@ -370,16 +370,16 @@ function extractBarcode(query, sheetRows) {
   return null;
 }
 
-// ─── LLM CALL (DeepSeek) ────────────────────────────────────────
+// ─── LLM CALL (OpenAI-compatible) ──────────────────────────────
 async function callLLM(messages) {
-  const res = await fetch(DEEPSEEK_API_URL, {
+  const res = await fetch(LLM_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + apiKey
     },
     body: JSON.stringify({
-      model: DEEPSEEK_MODEL,
+      model: LLM_MODEL,
       messages: messages,
       temperature: 0.7,
       max_tokens: 800
@@ -397,7 +397,7 @@ async function callLLM(messages) {
 async function handleCommand(text) {
   if (isSending || !text.trim()) return;
   if (!apiKey) {
-    showToast('Enter your DeepSeek API key first');
+    showToast('Enter your OpenAI API key first');
     return;
   }
 
@@ -498,7 +498,7 @@ GUIDELINES:
 - Keep responses readable with short paragraphs.
 - Be warm and enthusiastic about Irish food and local produce.`;
 
-    addToolStep('fa-brain', 'DeepSeek', 'Thinking...', 'llm');
+    addToolStep('fa-brain', 'OpenAI', 'Thinking...', 'llm');
     await delay(60);
 
     const reply = await callLLM([
@@ -516,7 +516,7 @@ GUIDELINES:
     console.error('Handler error:', e);
 
     if (e.message.includes('401') || e.message.includes('Unauthorized') || e.message.includes('Incorrect API key')) {
-      addMsg('Your DeepSeek API key appears to be invalid. Please check it and try again.', 'bot');
+      addMsg('Your OpenAI API key appears to be invalid. Please check it and try again.', 'bot');
       keyStatus.className = 'status-dot error';
       keyStatus.title = 'Invalid API key';
     } else if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
